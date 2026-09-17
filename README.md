@@ -37,7 +37,7 @@ After a new song comes out, listener momentum settles down after about **21 to 2
 
 | | Product 1: "Two Way Street" | Product 2: "From Me to You" | Product 3: "Missing Pieces" |
 |---|---|---|---|
-|| <img src="1.jpg" width="180"> | <img src="2.jpg" width="180"> | <img src="3.jpg" width="180"> |
+|| <img width="130" alt="Two Way Street" src="https://github.com/user-attachments/assets/4842136f-8a62-4c8a-9d07-1720f75bfa53" /> | <img width="130" alt="From Me to You" src="https://github.com/user-attachments/assets/f07166cb-94dc-495f-8ce3-a607993c27c3" /> | <img width="130" alt="Missing Pieces" src="https://github.com/user-attachments/assets/7c607941-91fe-408e-82d0-afb1e10b609f" /> |
 | **Release Date** | Oct 6, 2023 | May 24, 2024 | Sep 19, 2025 |
 | **Stylistic Feature Set** | Ballad Pop / Folk | Mandopop | Mandopop / Pop-Rock |
 |**Language** |English|Mandarin|Mandarin|
