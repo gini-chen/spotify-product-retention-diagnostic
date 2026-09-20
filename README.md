@@ -1,5 +1,4 @@
 # Digital Product Optimization: Independent Streaming Portfolio & Retention Diagnostic
-**Author:** Yu-Chi (Gini) Chen  
 **Artist Profile:** [Spotify](https://open.spotify.com/artist/3akIq2A3BNOLtMa9X5C81M?si=lL9GJGooSA-z0i-iJOlgcg)
 
 **Role Scope:** Product Analytics | Growth & Business Insights  
@@ -8,10 +7,10 @@
 ## The Business Problem
 High stream counts don't equal loyal fans. A track can get thousands of passive plays, but without library saves or repeat listens, marketing efforts quickly go to waste.
 
-Without a paid marketing budget, this analysis answers two practical questions:
+Two practical questions:
 
-* Style Fit: Which genre creates loyal, repeat listeners instead of one-time plays?
-* Growth Driver: Which action: streams, playlist adds, or saves actually leads to permanent followers, and what release timing prevents the numbers from dropping back to zero?
+✦ ** Which genre creates loyal, repeat listeners instead of one-time plays?
+✦ ** Which action: streams, playlist adds, or saves actually leads to permanent followers, and what release timing prevents the numbers from dropping back to zero?
 
 ---
 
