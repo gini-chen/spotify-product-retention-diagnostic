@@ -1,60 +1,150 @@
-# Digital Product Optimization: Independent Streaming Portfolio & Retention Diagnostic
+(Spotify Product Retention Diagnostic)
+# Audience Analytics: Does Engagement Persist After Streaming Spikes?
 **Artist Profile:** [Spotify](https://open.spotify.com/artist/3akIq2A3BNOLtMa9X5C81M?si=lL9GJGooSA-z0i-iJOlgcg)
 
-**Role Scope:** Product Analytics | Growth & Business Insights  
-**Tools:** Python (`pandas`, `matplotlib`), Time-Series Analysis
+**Role Scope:** Product Analytics | Audience Engagement | Growth Insights  
+**Tools:** SQL (PostgreSQL), DBeaver
 
-## The Business Problem
-High stream counts don't equal loyal fans. A track can get thousands of passive plays, but without library saves or repeat listens, marketing efforts quickly go to waste.
+## Main Question
+A streaming spike can bring attention to an independent artist, but does that attention translate into sustained listening activity?
 
-Two practical questions:
+## Dataset & Preparation
+The dataset contains **1,051 daily artist-level observations from January 1, 2024, through November 16, 2026**, covering **63,137 streams**. Each row represents one day of activity across my catalog.
+[View dataset](data/audience_timeline.csv) 
 
-✦ ** Which genre creates loyal, repeat listeners instead of one-time plays?
-✦ ** Which action: streams, playlist adds, or saves actually leads to permanent followers, and what release timing prevents the numbers from dropping back to zero?
+## SQL Analysis
 
----
+### Query 1 — February 4, 2025 had the most streams, but fewer listeners than January 23
 
-## Executive Summary & Core Findings
+**Question:** Did the days with the most streams also reach the most listeners?
 
-Analyzing nearly 1,000 days of data (Jan 2024 – Sep 2026) and over 63,000 streams revealed four key insights:
+**SQL**
 
-✦ **1. Switching to Mandopop Multiplied Growth by 5x**  
-Going from a Ballad Pop ("Two Way Street", ~73 plays/day) to Mandopop ("From Me to You") brought an immediate **5.4x jump in 30-day plays** (12,099 streams, hitting 948 in a single day). Listeners also replayed it an average of **9 times per person**, showing it was a much better fit for the audience.
+```sql
+select date, streams, listeners as daily_listeners, saves from database
+order by streams desc
+limit 5;
+```
 
-✦ **2. Pop-Rock Attracts the Most Playlist Adds**  
-Adding upbeat Pop-Rock energy ("Missing Pieces") drove the biggest playlist spike yet: **102 playlist adds in 30 days** (peaking at 61 adds in one day). It also had the highest replay rate (**10.8 plays per listener**), proving high-energy tracks fit Spotify playlists much more naturally.
+**Results**
 
-✦ **3. Song Saves Drive Permanent Followers**  
-Getting onto playlists without saves only caused short spikes that faded away within two weeks. In contrast, periods with high song saves (like early 2025 with 375 saves) drove a **+304% surge in permanent followers** (jumping from 67 to 271).
+| Date | Streams | Daily listeners | Saves |
+| --- | ---: | ---: | ---: |
+| February 4, 2025 | 1,345 | 655 | 115 |
+| January 23, 2025 | 992 | 780 | 88 |
+| May 26, 2024 | 948 | 94 | 4 |
+| March 14, 2024 | 882 | 4 | 1 |
+| May 24, 2024 | 853 | 138 | 9 |
 
-✦ **4. The 3-Week Rule for New Releases**  
-After a new song comes out, listener momentum settles down after about **21 to 28 days**. Waiting 6 to 12 months between releases resets algorithmic discovery, while releasing a new track every **4 to 6 weeks** keeps listener growth compounding over time.
+**Finding:** February 4 had the highest stream count, while January 23 reached more listeners. More plays did not always mean more people listening.
 
----
 
-## Product Feature & Lifecycle Comparison
+### Query 2 — Average daily listeners fell approximately 65% from week 1 to week 4
 
-| | 1: "Two Way Street" | 2: "From Me to You" | 3: "Missing Pieces" |
-|---|---|---|---|
-|| <img width="100" alt="Two Way Street" src="https://github.com/user-attachments/assets/4842136f-8a62-4c8a-9d07-1720f75bfa53" /> | <img width="100" alt="From Me to You" src="https://github.com/user-attachments/assets/f07166cb-94dc-495f-8ce3-a607993c27c3" /> | <img width="100" alt="Missing Pieces" src="https://github.com/user-attachments/assets/7c607941-91fe-408e-82d0-afb1e10b609f" /> |
-| **Release Date** | Oct 6, 2023 | May 24, 2024 | Sep 19, 2025 |
-| **Stylistic Feature Set** | Ballad Pop / Folk | Mandopop | Mandopop / Pop-Rock |
-|**Language** |English|Mandarin|Mandarin|
-| **30-Day Launch Volume** | ~2,200 *(Catalog Baseline)* | **12,099 streams** | 3,146 streams |
-| **Peak Single-Day Streams** | ~73 *(Baseline)* | **948 streams** | 572 streams |
-| **30-Day Playlist Placements** | 57 *(Jan–May 2024)* | 67 adds | **102 adds** *(Peak: 61/day)* |
-| **Repeat Depth** | 5.82 | 9.00 | **10.85** |
-| **Core Strategic Role** | Brand Foundation | Acquisition Scaler | Curation & Retention Driver |
+**Question:** How did listening and saving activity change during the following four weeks?
 
-## Business & Operational Recommendations
+I compared the seven days before the February 4 peak with four consecutive seven-day periods afterward, excluding the peak day.
 
-✦ **Make More Mandopop Pop-Rock Songs**  
-Focus on writing and producing upbeat Mandopop Pop-Rock tracks. This style lands on playlists much more easily and gets listeners to replay the music more than 10 times each.
+**SQL**
 
-✦ **Focus on Song Saves, Not Just Play Counts**  
-Stop spending effort on random playlist submissions that bring passive plays with no saves. Instead, focus on channels and content (like short videos) that encourage listeners to actually save the song to their library.
+```sql
+with clean_data as 
+(select cast(date as date) as date, cast(streams as integer) as streams, 
+cast(listeners as integer) as listeners, cast(saves as integer) as saves
+from database), 
+peak as 
+(select date as spike_date from clean_data
+order by streams desc, date
+limit 1), 
+periods (period_name, first_day, last_day) as 
+(values ('Before spike', -7, -1),
+        ('Week 1 after',  1,  7),
+        ('Week 2 after',  8, 14),
+        ('Week 3 after', 15, 21),
+        ('Week 4 after', 22, 28)) 
+select p.period_name, count(a.date)days_oberved, round(avg(streams), 1) avg_streams, 
+round(avg(listeners),1) avg_listeners, sum(saves)total_saves, 
+round(100.0 * sum(a.saves) / nullif(sum(a.streams), 0), 2) saves_per_100_streams
+from peak s
+cross join periods p
+left join clean_data a
+    on a.date between s.spike_date + p.first_day
+                  and s.spike_date + p.last_day
+group by p.period_name
+order by p.period_name;
 
-✦ **Release a New Single Every 4 to 6 Weeks**  
-Instead of waiting a year between releases, drop a single every 4 to 6 weeks. This keeps the algorithm active and reaches listeners again before interest drops off at the 3-week mark.
+```
 
----
+**Results**
+
+| Period | Days observed | Average daily streams | Average daily listeners | Total saves | Saves per 100 streams |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Before spike | 7 | 367.4 | 155.0 | 95 | 3.69 |
+| Week 1 after | 7 | 214.6 | 86.4 | 74 | 4.93 |
+| Week 2 after | 7 | 16.4 | 15.6 | 2 | 1.74 |
+| Week 3 after | 7 | 30.7 | 29.6 | 5 | 2.33 |
+| Week 4 after | 7 | 31.4 | 30.1 | 12 | 5.45 |
+
+**Finding:** Average daily listeners declined approximately **65% from week 1 to week 4**, with the sharpest drop in week 2 and a partial recovery afterward. Each period contains seven observed days.
+Week 4 had a higher saves-per-100-streams ratio than week 1, but total saves fell from 74 to 12. This ratio measures saves relative to plays, not the percentage of listeners who saved.
+
+### Query 3 — Followers remained 27 higher after 28 days, while the active audience declined
+
+**Question:** Were follower totals and active audience counts still higher 28 days later?
+
+**SQL**
+```sql
+with clean_data as (
+select cast(date as date) as date, cast(streams as integer) as streams,
+cast(followers as integer) as followers,
+cast("monthly listeners" as integer) as monthly_listeners,
+cast("monthly active listeners" as integer)as monthly_active_listeners
+from database),
+peak as 
+(select date as spike_date from clean_data
+order by streams desc, date
+limit 1)
+select d.date, p.spike_date, d.followers, d.followers - first_value(d.followers)over (order by d.date) net_fol_since_spike,
+d.monthly_listeners, d.monthly_active_listeners
+from clean_data d
+cross join peak p 
+where d.date in (p.spike_date, p.spike_date + 7, p.spike_date + 28)
+order by d.date;
+```
+
+**Results**
+
+| Snapshot | Date | Followers | Net change since spike | Monthly listeners | Monthly active listeners |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Spike day | February 4, 2025 | 243 | 0 | 1,706 | 60 |
+| Day 7 | February 11, 2025 | 271 | +28 | 1,848 | 70 |
+| Day 28 | March 4, 2025 | 270 | +27 | 1,053 | 32 |
+
+**Finding:** After 28 days, followers remained **11.1% above** the spike-day total, while monthly active listeners were **46.7% below** it. These percentages compare day 28 with the spike day.
+
+
+
+
+## Further Exploration: Catalog Activity Around Releases
+
+My releases span English-language Ballad Pop, Mandopop, and Mandopop / Pop-Rock. I also explored whether catalog activity differed around these releases.
+
+**Question:** How did streaming volume, saves, and playlist adds differ across comparable release windows?
+
+
+
+| | From Me to You | Missing Pieces |
+|---|---|---|
+|| <img width="100" alt="From Me to You" src="https://github.com/user-attachments/assets/f07166cb-94dc-495f-8ce3-a607993c27c3" /> | <img width="100" alt="Missing Pieces" src="https://github.com/user-attachments/assets/7c607941-91fe-408e-82d0-afb1e10b609f" /> |
+| Release date | May 24, 2024 | September 19, 2025 |
+| Style | Mandopop | Mandopop / Pop-Rock |
+| Language | Mandarin | Mandarin |
+| Observation window | May 24–June 22, 2024 | September 19–October 18, 2025 |
+| Catalog streams | 12,099 | 3,146 |
+| Saves | 42 | 23 |
+| Playlist adds | 67 | 102 |
+
+**Finding:** The “From Me to You” window had more catalog streams and saves, while the “Missing Pieces” window had more playlist adds.
+
+**Interpretation:** These windows showed different engagement patterns. However, the comparison cannot establish whether genre, promotion, audience size, or another factor explains the differences.
+
